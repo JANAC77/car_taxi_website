@@ -5,14 +5,14 @@ import api from "../../api";
 export default function TripHistory({ driver }) {
   const [activeSubTab, setActiveSubTab] = useState("wallet"); // wallet or history
   const [searchTerm, setSearchTerm] = useState("");
-  
+
   // States
   const [history, setHistory] = useState([]);
   const [transactions, setTransactions] = useState([]);
   const [walletBalance, setWalletBalance] = useState(0);
   const [adminUpi, setAdminUpi] = useState("");
   const [loading, setLoading] = useState(true);
-  
+
   // Recharge form state
   const [rechargeAmount, setRechargeAmount] = useState("");
   const [transactionRef, setTransactionRef] = useState("");
@@ -43,9 +43,11 @@ export default function TripHistory({ driver }) {
 
       setTransactions(txRes.data.data);
 
-      // Filter for Completed status
-      const completed = tripsRes.data.data.filter(t => t.status === "Completed");
-      setHistory(completed);
+      console.log("All driver trips fetched:", tripsRes.data.data);
+      // Filter for Completed or Cancelled status
+      const pastRides = tripsRes.data.data.filter(t => t.status === "Completed" || t.status === "Cancelled");
+      console.log("Filtered past history trips (Completed & Cancelled):", pastRides);
+      setHistory(pastRides);
 
     } catch (err) {
       console.error("Failed to fetch history details", err);
@@ -87,7 +89,7 @@ export default function TripHistory({ driver }) {
     }
   };
 
-  const filteredHistory = history.filter(trip => 
+  const filteredHistory = history.filter(trip =>
     trip._id.toLowerCase().includes(searchTerm.toLowerCase()) ||
     trip.pickupLocation.toLowerCase().includes(searchTerm.toLowerCase()) ||
     trip.dropLocation.toLowerCase().includes(searchTerm.toLowerCase())
@@ -101,7 +103,7 @@ export default function TripHistory({ driver }) {
   return (
     <div className="bg-white text-slate-900 rounded-[2.5rem] p-6 sm:p-10 space-y-8 shadow-xl border border-slate-100 overflow-hidden relative">
       <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-secondary/5 rounded-full blur-[100px] pointer-events-none translate-x-1/2 -translate-y-1/2" />
-      
+
       {/* Tab Switch Header */}
       <div className="relative z-10 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6 border-b border-slate-100 pb-6">
         <div className="space-y-1">
@@ -112,19 +114,17 @@ export default function TripHistory({ driver }) {
         </div>
 
         <div className="flex bg-slate-100 p-1.5 rounded-2xl w-full sm:w-auto shrink-0">
-          <button 
+          <button
             onClick={() => setActiveSubTab("wallet")}
-            className={`flex-1 sm:flex-none py-2.5 px-6 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${
-              activeSubTab === "wallet" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-900"
-            }`}
+            className={`flex-1 sm:flex-none py-2.5 px-6 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${activeSubTab === "wallet" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-900"
+              }`}
           >
             Wallet & Transactions
           </button>
-          <button 
+          <button
             onClick={() => setActiveSubTab("history")}
-            className={`flex-1 sm:flex-none py-2.5 px-6 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${
-              activeSubTab === "history" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-900"
-            }`}
+            className={`flex-1 sm:flex-none py-2.5 px-6 rounded-xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer ${activeSubTab === "history" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-900"
+              }`}
           >
             Past Rides
           </button>
@@ -138,19 +138,18 @@ export default function TripHistory({ driver }) {
             <p className="text-sm font-bold text-slate-500">Fetching records...</p>
           </div>
         ) : activeSubTab === "wallet" ? (
-          
+
           /* WALLET SYSTEM VIEW */
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            
+
             {/* Wallet Overview & Recharge Form */}
             <div className="lg:col-span-1 space-y-6">
-              
+
               {/* Wallet Card */}
-              <div className={`p-6 rounded-3xl border flex flex-col justify-between h-40 relative overflow-hidden ${
-                walletBalance < 2000 
-                  ? 'bg-rose-50/60 border-rose-200 text-rose-900' 
+              <div className={`p-6 rounded-3xl border flex flex-col justify-between h-40 relative overflow-hidden ${walletBalance < 2000
+                  ? 'bg-rose-50/60 border-rose-200 text-rose-900'
                   : 'bg-gradient-to-br from-slate-900 to-slate-950 text-white border-slate-800'
-              }`}>
+                }`}>
                 <div className="absolute right-0 top-0 w-32 h-32 bg-secondary/10 blur-2xl rounded-full" />
                 <div className="flex justify-between items-start z-10">
                   <span className="text-[10px] font-black uppercase tracking-widest opacity-80">Wallet Balance</span>
@@ -175,11 +174,11 @@ export default function TripHistory({ driver }) {
                   <p>1. Send the recharge amount to the Admin UPI ID below using any UPI app (GPay, PhonePe, Paytm, BHIM):</p>
                   <div className="bg-white border border-slate-200 p-3 rounded-xl flex items-center justify-between font-mono font-bold text-slate-900 text-sm">
                     <span>{adminUpi || "admin@upi"}</span>
-                    <button 
+                    <button
                       onClick={() => {
                         navigator.clipboard.writeText(adminUpi || "admin@upi");
                         alert("UPI ID copied!");
-                      }} 
+                      }}
                       className="text-xs text-secondary hover:underline font-sans font-bold cursor-pointer"
                     >
                       Copy
@@ -193,7 +192,7 @@ export default function TripHistory({ driver }) {
               {/* Recharge Request Form */}
               <form onSubmit={handleRechargeSubmit} className="border border-slate-200 rounded-3xl p-6 bg-white space-y-4">
                 <h4 className="text-sm font-black text-slate-900 border-b border-slate-100 pb-2">Submit Recharge Request</h4>
-                
+
                 {formError && (
                   <div className="bg-red-50 text-red-600 p-3 rounded-xl flex items-center gap-2 text-xs font-semibold border border-red-100">
                     <AlertCircle size={14} className="shrink-0" />
@@ -209,9 +208,9 @@ export default function TripHistory({ driver }) {
 
                 <div className="flex flex-col gap-1.5">
                   <label className="text-[10px] font-black text-slate-500 uppercase">Amount (₹) *</label>
-                  <input 
-                    type="number" 
-                    placeholder="2500" 
+                  <input
+                    type="number"
+                    placeholder="2500"
                     value={rechargeAmount}
                     onChange={(e) => setRechargeAmount(e.target.value)}
                     className="w-full py-2 px-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-900 focus:outline-none focus:border-secondary"
@@ -219,11 +218,30 @@ export default function TripHistory({ driver }) {
                   />
                 </div>
 
+                {Number(rechargeAmount) > 0 && (
+                  <div className="bg-slate-50 border border-slate-200 p-4 rounded-2xl flex flex-col items-center gap-3 text-center transition-all duration-300">
+                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-wider">Scan QR to pay ₹{rechargeAmount}</p>
+                    <div className="p-2 border border-slate-100 rounded-xl bg-white shadow-xs">
+                      <img
+                        src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&margin=10&data=${encodeURIComponent(
+                          `upi://pay?pa=${adminUpi || "admin@upi"}&pn=${encodeURIComponent("CAB BAZAR Admin")}&am=${rechargeAmount}&cu=INR`
+                        )}`}
+                        alt="Admin UPI QR Code"
+                        className="w-36 h-36 object-contain"
+                      />
+                    </div>
+                    <div className="space-y-0.5">
+                      <p className="text-[10px] text-slate-800 font-bold">UPI: {adminUpi || "admin@upi"}</p>
+                      <p className="text-[9px] text-slate-400 font-medium">After paying, enter the UTR/Reference number below</p>
+                    </div>
+                  </div>
+                )}
+
                 <div className="flex flex-col gap-1.5">
                   <label className="text-[10px] font-black text-slate-500 uppercase">Transaction UTR/Reference No. *</label>
-                  <input 
-                    type="text" 
-                    placeholder="12-digit reference number" 
+                  <input
+                    type="text"
+                    placeholder="12-digit reference number"
                     value={transactionRef}
                     onChange={(e) => setTransactionRef(e.target.value)}
                     className="w-full py-2 px-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-900 focus:outline-none focus:border-secondary"
@@ -231,7 +249,7 @@ export default function TripHistory({ driver }) {
                   />
                 </div>
 
-                <button 
+                <button
                   type="submit"
                   disabled={submittingRecharge}
                   className="w-full bg-slate-900 hover:bg-slate-800 text-white font-black py-3 rounded-xl shadow-sm text-xs uppercase tracking-wider transition-colors cursor-pointer disabled:opacity-50"
@@ -245,7 +263,7 @@ export default function TripHistory({ driver }) {
             {/* Transaction History Log */}
             <div className="lg:col-span-2 space-y-4">
               <h2 className="text-xs font-black text-slate-400 uppercase tracking-widest">Transaction & Deduction History</h2>
-              
+
               {transactions.length === 0 ? (
                 <div className="text-center py-16 border border-dashed border-slate-200 rounded-3xl bg-slate-50/50">
                   <FileText size={40} className="mx-auto mb-3 text-slate-300 opacity-50" />
@@ -278,17 +296,15 @@ export default function TripHistory({ driver }) {
                           <td className="px-4 py-4 text-slate-700 font-medium truncate max-w-[180px]">
                             {tx.transactionRef || tx.description || "N/A"}
                           </td>
-                          <td className={`px-4 py-4 font-black text-right text-sm ${
-                            tx.type === 'Recharge' ? 'text-emerald-600' : 'text-rose-600'
-                          }`}>
+                          <td className={`px-4 py-4 font-black text-right text-sm ${tx.type === 'Recharge' ? 'text-emerald-600' : 'text-rose-600'
+                            }`}>
                             {tx.type === 'Recharge' ? '+' : '-'}₹{tx.amount}
                           </td>
                           <td className="px-4 py-4 text-center rounded-r-xl">
-                            <span className={`inline-block text-[8px] font-black px-2 py-1 rounded-full uppercase tracking-wider ${
-                              tx.status === 'Approved' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' :
-                              tx.status === 'Pending' ? 'bg-amber-50 text-amber-600 border border-amber-100' :
-                              'bg-rose-50 text-rose-600 border border-rose-100'
-                            }`}>
+                            <span className={`inline-block text-[8px] font-black px-2 py-1 rounded-full uppercase tracking-wider ${tx.status === 'Approved' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' :
+                                tx.status === 'Pending' ? 'bg-amber-50 text-amber-600 border border-amber-100' :
+                                  'bg-rose-50 text-rose-600 border border-rose-100'
+                              }`}>
                               {tx.status}
                             </span>
                           </td>
@@ -302,15 +318,15 @@ export default function TripHistory({ driver }) {
 
           </div>
         ) : (
-          
+
           /* PAST COMPLETED RIDES VIEW */
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row gap-4 justify-between items-center border-b border-slate-100 pb-6">
               <div className="relative w-full sm:w-96">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                <input 
-                  type="text" 
-                  placeholder="Search by ID or Location..." 
+                <input
+                  type="text"
+                  placeholder="Search by ID or Location..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full pl-12 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-900 placeholder-slate-400 focus:outline-none focus:border-secondary"
@@ -348,8 +364,12 @@ export default function TripHistory({ driver }) {
                         <td className="px-4 py-4 text-slate-600 font-bold">{trip.customer?.name || "Premium Guest"}</td>
                         <td className="px-4 py-4 font-black text-slate-950 text-sm text-right">₹{trip.fare}</td>
                         <td className="px-4 py-4 text-center rounded-r-xl">
-                          <span className="inline-block bg-emerald-50 border border-emerald-100 text-emerald-600 text-[8px] font-black px-2 py-1 rounded-full uppercase tracking-wider">
-                            Completed
+                          <span className={`inline-block border text-[8px] font-black px-2 py-1 rounded-full uppercase tracking-wider ${
+                            trip.status === 'Completed' 
+                              ? 'bg-emerald-50 border-emerald-100 text-emerald-600' 
+                              : 'bg-rose-50 border-rose-100 text-rose-600'
+                          }`}>
+                            {trip.status}
                           </span>
                         </td>
                       </tr>

@@ -42,9 +42,16 @@ export default function TodaysTrips({ driver }) {
         return;
       }
 
-      const active = myTripsRes.data.data.find(trip => 
+      const active = myTripsRes.data.data.find(trip =>
         ['Accepted', 'Arrived', 'Ongoing'].includes(trip.status)
       );
+
+      if (!active && activeRide) {
+        const oldRideUpdated = myTripsRes.data.data.find(trip => trip._id === activeRide._id);
+        if (oldRideUpdated && oldRideUpdated.status === 'Cancelled') {
+          setError(`Ride #${activeRide._id.substring(0, 8).toUpperCase()} was cancelled by the administrator.`);
+        }
+      }
 
       if (active) {
         setActiveRide(active);
@@ -118,7 +125,7 @@ export default function TodaysTrips({ driver }) {
         <Wallet size={48} className="mx-auto text-rose-500" />
         <h2 className="text-2xl font-black text-rose-600">Wallet Balance Below Limit</h2>
         <p className="text-slate-500 max-w-md mx-auto text-sm">
-          You must maintain a minimum wallet balance of <strong>₹2,000</strong> to view or accept rides. 
+          You must maintain a minimum wallet balance of <strong>₹2,000</strong> to view or accept rides.
           Current Balance: <strong className="text-rose-600">₹{walletBalance}</strong>
         </p>
         <p className="text-slate-400 text-xs">
@@ -131,7 +138,7 @@ export default function TodaysTrips({ driver }) {
   return (
     <div className="bg-white text-slate-900 rounded-[2.5rem] p-6 sm:p-10 space-y-10 shadow-xl border border-slate-100 overflow-hidden relative">
       <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-secondary/5 rounded-full blur-[100px] pointer-events-none translate-x-1/2 -translate-y-1/2" />
-      
+
       {/* Header */}
       <div className="relative z-10 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 border-b border-slate-100 pb-6">
         <div>
@@ -143,8 +150,8 @@ export default function TodaysTrips({ driver }) {
             {activeRide ? "You have an active ride in progress. Complete it to view other available rides." : "Accept and confirm from the available ride listings."}
           </p>
         </div>
-        <button 
-          onClick={fetchDashboardDetails} 
+        <button
+          onClick={fetchDashboardDetails}
           className="bg-slate-100 hover:bg-slate-200 text-slate-700 py-2 px-4 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer"
         >
           <RefreshCw size={14} /> Refresh
@@ -152,7 +159,14 @@ export default function TodaysTrips({ driver }) {
       </div>
 
       <div className="relative z-10">
-        
+
+        {error && (
+          <div className="mb-6 p-4 bg-rose-50 border border-rose-200 rounded-2xl flex items-center gap-3 text-rose-700 animate-fade-in">
+            <AlertCircle size={20} className="shrink-0" />
+            <p className="font-bold text-sm">{error}</p>
+          </div>
+        )}
+
         {/* Active Ride Flow */}
         {activeRide ? (
           <div className="space-y-6">
@@ -188,8 +202,8 @@ export default function TodaysTrips({ driver }) {
                 </div>
                 {activeRide.customer?.phone && (
                   <div className="flex items-center md:justify-end">
-                    <a 
-                      href={`tel:${activeRide.customer.phone}`} 
+                    <a
+                      href={`tel:${activeRide.customer.phone}`}
                       className="bg-secondary hover:bg-secondary-hover text-white py-3 px-6 rounded-xl font-bold flex items-center gap-2 shadow-sm text-sm"
                     >
                       <Phone size={16} /> Call Customer
@@ -201,7 +215,7 @@ export default function TodaysTrips({ driver }) {
               {/* Ride Address Path */}
               <div className="relative pl-6 space-y-6">
                 <div className="absolute left-[7px] top-2.5 bottom-2.5 w-[2px] bg-slate-200" />
-                
+
                 <div className="relative">
                   <div className="absolute left-[-24px] top-1.5 w-3.5 h-3.5 rounded-full border-2 border-secondary bg-white" />
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Pickup Address</p>
@@ -224,9 +238,9 @@ export default function TodaysTrips({ driver }) {
               {/* Active Ride Flow State Actions */}
               <div className="border-t border-slate-200/50 pt-6">
                 <p className="text-xs font-black text-slate-400 uppercase tracking-wider mb-4">Ride Progression</p>
-                
+
                 {activeRide.status === 'Accepted' && (
-                  <button 
+                  <button
                     onClick={() => progressRideStatus(activeRide._id, 'Arrived')}
                     className="w-full bg-slate-900 hover:bg-slate-800 text-white font-black tracking-wider py-4 rounded-xl shadow-md transition-colors text-sm uppercase flex items-center justify-center gap-2 cursor-pointer"
                   >
@@ -235,7 +249,7 @@ export default function TodaysTrips({ driver }) {
                 )}
 
                 {activeRide.status === 'Arrived' && (
-                  <button 
+                  <button
                     onClick={() => progressRideStatus(activeRide._id, 'Ongoing')}
                     className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-black tracking-wider py-4 rounded-xl shadow-md transition-colors text-sm uppercase flex items-center justify-center gap-2 cursor-pointer"
                   >
@@ -255,11 +269,10 @@ export default function TodaysTrips({ driver }) {
                         <button
                           type="button"
                           onClick={() => setSelectedPaymentMode('qr')}
-                          className={`p-4 rounded-2xl border text-center flex flex-col items-center justify-center gap-2 transition-all cursor-pointer ${
-                            selectedPaymentMode === 'qr'
+                          className={`p-4 rounded-2xl border text-center flex flex-col items-center justify-center gap-2 transition-all cursor-pointer ${selectedPaymentMode === 'qr'
                               ? 'bg-indigo-50/50 border-indigo-500 text-indigo-900 shadow-sm'
                               : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'
-                          }`}
+                            }`}
                         >
                           <QrCode size={24} className={selectedPaymentMode === 'qr' ? 'text-indigo-600' : 'text-slate-400'} />
                           <span className="text-xs font-bold uppercase tracking-wider">Scan UPI QR</span>
@@ -269,11 +282,10 @@ export default function TodaysTrips({ driver }) {
                         <button
                           type="button"
                           onClick={() => setSelectedPaymentMode('cash')}
-                          className={`p-4 rounded-2xl border text-center flex flex-col items-center justify-center gap-2 transition-all cursor-pointer ${
-                            selectedPaymentMode === 'cash'
+                          className={`p-4 rounded-2xl border text-center flex flex-col items-center justify-center gap-2 transition-all cursor-pointer ${selectedPaymentMode === 'cash'
                               ? 'bg-emerald-50/50 border-emerald-500 text-emerald-900 shadow-sm'
                               : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'
-                          }`}
+                            }`}
                         >
                           <Coins size={24} className={selectedPaymentMode === 'cash' ? 'text-emerald-600' : 'text-slate-400'} />
                           <span className="text-xs font-bold uppercase tracking-wider">Collect Cash</span>
@@ -333,7 +345,7 @@ export default function TodaysTrips({ driver }) {
           /* Available Rides List */
           <div className="space-y-6">
             <h2 className="text-xs font-black text-slate-400 uppercase tracking-widest">Available Ride Offers</h2>
-            
+
             {availableRides.length === 0 ? (
               <div className="text-center py-16 border border-dashed border-slate-200 rounded-3xl bg-slate-50/50">
                 <MapPin size={48} className="mx-auto mb-4 text-slate-300 opacity-50" />
@@ -344,7 +356,7 @@ export default function TodaysTrips({ driver }) {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {availableRides.map((ride) => (
                   <div key={ride._id} className="bg-white border border-slate-200 hover:border-slate-300 rounded-3xl p-6 sm:p-8 flex flex-col justify-between shadow-xs hover:shadow-md transition-all">
-                    
+
                     <div className="space-y-6">
                       <div className="flex justify-between items-start border-b border-slate-100 pb-4">
                         <div>
@@ -366,7 +378,7 @@ export default function TodaysTrips({ driver }) {
                       {/* Path */}
                       <div className="relative pl-6 space-y-4">
                         <div className="absolute left-[5px] top-2 bottom-2 w-[1.5px] bg-slate-200" />
-                        
+
                         <div className="relative">
                           <div className="absolute left-[-23px] top-1.5 w-2.5 h-2.5 rounded-full border border-secondary bg-white" />
                           <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">From</p>
@@ -384,7 +396,7 @@ export default function TodaysTrips({ driver }) {
                       </div>
                     </div>
 
-                    <button 
+                    <button
                       onClick={() => acceptRide(ride._id)}
                       className="w-full mt-6 bg-slate-900 hover:bg-slate-800 text-white font-black py-3 rounded-xl shadow-sm hover:shadow text-xs uppercase tracking-wider transition-colors cursor-pointer"
                     >
