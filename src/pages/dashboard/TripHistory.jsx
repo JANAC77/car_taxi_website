@@ -147,8 +147,8 @@ export default function TripHistory({ driver }) {
 
               {/* Wallet Card */}
               <div className={`p-6 rounded-3xl border flex flex-col justify-between h-40 relative overflow-hidden ${walletBalance < 2000
-                  ? 'bg-rose-50/60 border-rose-200 text-rose-900'
-                  : 'bg-gradient-to-br from-slate-900 to-slate-950 text-white border-slate-800'
+                ? 'bg-rose-50/60 border-rose-200 text-rose-900'
+                : 'bg-gradient-to-br from-slate-900 to-slate-950 text-white border-slate-800'
                 }`}>
                 <div className="absolute right-0 top-0 w-32 h-32 bg-secondary/10 blur-2xl rounded-full" />
                 <div className="flex justify-between items-start z-10">
@@ -302,8 +302,8 @@ export default function TripHistory({ driver }) {
                           </td>
                           <td className="px-4 py-4 text-center rounded-r-xl">
                             <span className={`inline-block text-[8px] font-black px-2 py-1 rounded-full uppercase tracking-wider ${tx.status === 'Approved' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' :
-                                tx.status === 'Pending' ? 'bg-amber-50 text-amber-600 border border-amber-100' :
-                                  'bg-rose-50 text-rose-600 border border-rose-100'
+                              tx.status === 'Pending' ? 'bg-amber-50 text-amber-600 border border-amber-100' :
+                                'bg-rose-50 text-rose-600 border border-rose-100'
                               }`}>
                               {tx.status}
                             </span>
@@ -364,11 +364,10 @@ export default function TripHistory({ driver }) {
                         <td className="px-4 py-4 text-slate-600 font-bold">{trip.customer?.name || "Premium Guest"}</td>
                         <td className="px-4 py-4 font-black text-slate-950 text-sm text-right">₹{trip.fare}</td>
                         <td className="px-4 py-4 text-center rounded-r-xl">
-                          <span className={`inline-block border text-[8px] font-black px-2 py-1 rounded-full uppercase tracking-wider ${
-                            trip.status === 'Completed' 
-                              ? 'bg-emerald-50 border-emerald-100 text-emerald-600' 
+                          <span className={`inline-block border text-[8px] font-black px-2 py-1 rounded-full uppercase tracking-wider ${trip.status === 'Completed'
+                              ? 'bg-emerald-50 border-emerald-100 text-emerald-600'
                               : 'bg-rose-50 border-rose-100 text-rose-600'
-                          }`}>
+                            }`}>
                             {trip.status}
                           </span>
                         </td>
